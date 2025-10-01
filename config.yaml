@@ -1,0 +1,232 @@
+# Aries Trading Agent Configuration
+# Risk-Averse Energy Trading Agent for Colombian Market
+
+# Agent Configuration
+agent:
+  algorithm: "PPO"  # PPO or SAC
+  risk_aversion_lambda: 0.5
+  initial_capital: 100000.0
+  max_position_size: 1000.0
+
+# Risk Management
+risk:
+  risk_aversion_lambda: 0.5
+  max_position_size: 1000.0
+  max_portfolio_risk: 0.2
+  var_confidence: 0.05
+  cvar_confidence: 0.05
+  max_drawdown: 0.15
+  stop_loss: 0.1
+  take_profit: 0.2
+  
+  position_sizing:
+    method: "kelly"  # kelly, fixed, volatility_target
+    max_fraction: 0.1
+    volatility_target: 0.15
+  
+  risk_metrics:
+    var: true
+    cvar: true
+    volatility: true
+    sharpe_ratio: true
+    max_drawdown: true
+  
+  dynamic_risk:
+    enabled: true
+    volatility_threshold: 0.2
+    correlation_threshold: 0.7
+    market_regime_detection: true
+
+# Training Configuration
+training:
+  total_timesteps: 100000
+  learning_rate: 0.0003
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.01
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+  
+  hyperparameter_optimization:
+    enabled: false
+    n_trials: 20
+    optimization_metric: "sharpe_ratio"
+    search_space:
+      learning_rate: [1e-5, 1e-2]
+      batch_size: [32, 256]
+      gamma: [0.9, 0.999]
+      ent_coef: [0.0, 0.1]
+  
+  early_stopping:
+    enabled: true
+    patience: 10
+    min_delta: 0.01
+    monitor_metric: "eval_reward"
+  
+  model_checkpointing:
+    enabled: true
+    save_best: true
+    save_frequency: 10000
+    max_checkpoints: 5
+  
+  evaluation:
+    n_eval_episodes: 10
+    deterministic: true
+    render: false
+
+# Forecasting Configuration
+forecasting:
+  forecast_horizon: 24  # hours
+  sequence_length: 168  # hours (1 week)
+  target_variables: ["price", "demand", "supply"]
+  features:
+    - "price"
+    - "price_change"
+    - "price_volatility_24h"
+    - "demand"
+    - "supply"
+    - "demand_supply_ratio"
+    - "hour"
+    - "day_of_week"
+    - "is_weekend"
+    - "temperature"
+    - "humidity"
+    - "wind_speed"
+  
+  models:
+    lstm:
+      enabled: true
+      hidden_size: 128
+      num_layers: 2
+      dropout: 0.2
+      learning_rate: 0.001
+      epochs: 100
+      batch_size: 32
+    
+    transformer:
+      enabled: true
+      d_model: 128
+      nhead: 8
+      num_layers: 4
+      dropout: 0.1
+      learning_rate: 0.0001
+      epochs: 50
+      batch_size: 16
+    
+    ensemble:
+      enabled: true
+      method: "weighted_average"  # weighted_average, stacking, voting
+      weights: [0.4, 0.6]  # LSTM, Transformer
+  
+  uncertainty_quantification:
+    method: "quantile_regression"  # quantile_regression, monte_carlo, ensemble
+    quantiles: [0.05, 0.25, 0.5, 0.75, 0.95]
+    monte_carlo_samples: 100
+  
+  validation:
+    train_split: 0.7
+    val_split: 0.15
+    test_split: 0.15
+    cross_validation: true
+    cv_folds: 5
+
+# Environment Configuration
+environment:
+  state_features:
+    - "price"
+    - "price_change"
+    - "price_volatility_24h"
+    - "demand"
+    - "supply"
+    - "demand_supply_ratio"
+    - "hour"
+    - "day_of_week"
+    - "is_weekend"
+    - "position"
+    - "capital"
+    - "portfolio_value"
+  
+  forecast_horizon: 24
+  trading_frequency: 1  # hours
+  price_impact: 0.001
+  market_volatility: 0.02
+  demand_elasticity: 0.5
+  supply_elasticity: 0.3
+
+# Data Configuration
+data:
+  database_path: "data/market_data.db"
+  update_frequency: 3600  # seconds
+  max_history_days: 365
+  
+  sources:
+    xm:
+      enabled: true
+      update_interval: 3600
+    
+    san_andres:
+      enabled: true
+      update_interval: 1800
+  
+  preprocessing:
+    missing_data_strategy: "interpolate"  # interpolate, forward_fill, backward_fill, drop
+    outlier_detection: true
+    outlier_method: "iqr"  # iqr, zscore, isolation_forest
+    outlier_threshold: 3.0
+    normalization: "standard"  # standard, minmax, robust, none
+    feature_engineering: true
+    time_features: true
+    lag_features: true
+    rolling_features: true
+    lag_periods: [1, 2, 3, 6, 12, 24]
+    rolling_windows: [3, 6, 12, 24, 48]
+    target_column: "price"
+
+# Trading Configuration
+trading:
+  min_trade_size: 0.01
+  max_trade_size: 1.0
+  transaction_cost: 0.001
+  slippage: 0.0005
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/aries.log"
+  max_size: 10485760  # 10MB
+  backup_count: 5
+
+# API Configuration
+api:
+  xm:
+    base_url: "https://www.xm.com.co"
+    timeout: 30
+    retries: 3
+  
+  san_andres:
+    base_url: "https://api.sanandres.gov.co"
+    timeout: 30
+    retries: 3
+
+# Deployment Configuration
+deployment:
+  mode: "development"  # development, staging, production
+  monitoring:
+    enabled: true
+    metrics_interval: 60  # seconds
+    alert_thresholds:
+      max_drawdown: 0.2
+      min_sharpe_ratio: 0.5
+      max_volatility: 0.3
+  
+  trading:
+    paper_trading: true
+    max_daily_trades: 100
+    max_position_size: 1000.0
+    risk_limits:
+      max_portfolio_risk: 0.2
+      max_single_trade_risk: 0.05
