@@ -102,14 +102,33 @@ class RiskAverseTradingAgent:
     def _initialize_rl_agent(self):
         """Initialize the RL agent based on algorithm choice."""
         if self.algorithm.upper() == 'PPO':
+            training_config = self.config['training'].copy()
+            training_config.update({
+                'policy': 'MlpPolicy',
+                'n_steps': 2048,
+                'target_kl': 0.01,
+                'tensorboard_log': None,
+                'verbose': 1,
+                'device': 'auto',
+                'policy_kwargs': {}
+            })
             self.rl_agent = PPOAgent(
                 env=self.environment,
-                config=self.config['training']
+                config=training_config
             )
         elif self.algorithm.upper() == 'SAC':
+            training_config = self.config['training'].copy()
+            training_config.update({
+                'policy': 'MlpPolicy',
+                'target_entropy': 'auto',
+                'tensorboard_log': None,
+                'verbose': 1,
+                'device': 'auto',
+                'policy_kwargs': {}
+            })
             self.rl_agent = SACAgent(
                 env=self.environment,
-                config=self.config['training']
+                config=training_config
             )
         else:
             raise ValueError(f"Unknown algorithm: {self.algorithm}")

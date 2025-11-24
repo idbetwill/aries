@@ -110,7 +110,8 @@ class ProbabilisticForecaster:
                 'sequence_length': self.config['sequence_length'],
                 'forecast_horizon': self.config['forecast_horizon'],
                 'target_variables': self.config['target_variables'],
-                'features': self.config['features']
+                'features': self.config['features'],
+                'device': 'auto'
             })
             self.models['lstm'] = LSTMForecaster(config=lstm_config)
         
@@ -121,7 +122,8 @@ class ProbabilisticForecaster:
                 'sequence_length': self.config['sequence_length'],
                 'forecast_horizon': self.config['forecast_horizon'],
                 'target_variables': self.config['target_variables'],
-                'features': self.config['features']
+                'features': self.config['features'],
+                'device': 'auto'
             })
             self.models['transformer'] = TransformerForecaster(config=transformer_config)
         
